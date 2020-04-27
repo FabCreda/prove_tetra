@@ -60,7 +60,8 @@ def compute_equation(eq,p,v):
     num=np.dot(eq[[0,1]],p)+eq[2]
     den=np.dot(eq[[0,1]],v)
 
-    k=-num/den
+    if abs(den)>10^(-8):
+        k=-num/den
 
     return k
 
@@ -145,22 +146,25 @@ def segments_control(tri,p):
     flag=0
     
     # We control if p is on t2[1]-t2[0]
-    sx=(p[0]-tri[0,0])/(tri[1,0]-tri[0,0])
-    sy=(p[1]-tri[0,1])/(tri[1,1]-tri[0,1])
-    if abs(sx-sy)<tol and (0-tol)<=sx<=(1+tol):
-        flag=1
+    if abs(tri[1,0]-tri[0,0])>tol and abs(tri[1,1]-tri[0,1])>tol:
+        sx=(p[0]-tri[0,0])/(tri[1,0]-tri[0,0])
+        sy=(p[1]-tri[0,1])/(tri[1,1]-tri[0,1])
+        if abs(sx-sy)<tol and (0-tol)<=sx<=(1+tol):
+            flag=1
         
     # We control if p is on t2[2]-t2[1]
-    sx=(p[0]-tri[1,0])/(tri[2,0]-tri[1,0])
-    sy=(p[1]-tri[1,1])/(tri[2,1]-tri[1,1])
-    if abs(sx-sy)<tol and (0-tol)<=sx<=(1+tol):
-        flag=1
+    if abs(tri[2,0]-tri[1,0])>tol and abs(tri[2,1]-tri[1,1]):
+        sx=(p[0]-tri[1,0])/(tri[2,0]-tri[1,0])
+        sy=(p[1]-tri[1,1])/(tri[2,1]-tri[1,1])
+        if abs(sx-sy)<tol and (0-tol)<=sx<=(1+tol):
+            flag=1
         
     # We control if p is on t2[0]-t2[2]
-    sx=(p[0]-tri[2,0])/(tri[0,0]-tri[2,0])
-    sy=(p[1]-tri[2,1])/(tri[0,1]-tri[2,1])
-    if abs(sx-sy)<tol and (0-tol)<=sx<=(1+tol):
-        flag=1
+    if abs(tri[0,0]-tri[2,0])>tol and abs(tri[0,1]-tri[2,1])>tol:
+        sx=(p[0]-tri[2,0])/(tri[0,0]-tri[2,0])
+        sy=(p[1]-tri[2,1])/(tri[0,1]-tri[2,1])
+        if abs(sx-sy)<tol and (0-tol)<=sx<=(1+tol):
+            flag=1
     
     return flag
 
@@ -347,7 +351,8 @@ def compute_equation3(eq,p,v):
     num=np.dot(eq[[0,1,2]],p)+eq[3]
     den=np.dot(eq[[0,1,2]],v)
     
-    k=-num/den
+    if abs(den)>10^(-8):
+        k=-num/den
     
     return k
 
