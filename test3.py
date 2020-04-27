@@ -1,30 +1,80 @@
-
-# TEST TETRAHEDRA
-
+#----------------------#
+#- PLOT SOME EXAMPLES -#
+#----------------------#
+   
 import numpy as np
+from compute_intersection import *
+
 import matplotlib
 import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D
-import compute_intersection as cint
-from scipy.spatial import ConvexHull  
+from scipy.spatial import ConvexHull
 
-t1=np.array([[2,2,0],[7,2,0],[4,5,0],[5,3,4]])
-t2=np.array([[2,4,2],[4,1,2],[6,4.5,2],[3.5,3,-1]])# ok stella
-#t2=t1+np.array([[0,0,-2],[0,0,-2],[0,0,-2],[0,0,-2]])# ok infilzo
+def example1(): # transfix
 
-pinter=cint.tetrahedra_intersection(t1,t2)
-print('Punti di intersezione:')
-print(pinter)
+    t1=np.array([[0.,0.,0.],   
+                 [1.,0.,0.],
+                 [0.,1.,0.],
+                 [0.,0.,1.]])     
 
-ax=plt.axes(projection='3d')
-cint.draw_tetrahedron(t1,'r')
-cint.draw_tetrahedron(t2,'g')
-cint.draw_polyhedron(pinter,'b')
+    t2=np.array([[0.2,0.2,-0.5],
+                 [1.2,0.2,-0.5],
+                 [0.2,1.2,-0.5],
+                 [0.2,0.2, 0.5]])
 
-plt.show()
-'''
-plt.figure(2)
-ax=plt.axes(projection='3d')
-cint.draw_polyhedron(pinter,'b--')
-plt.show(2)
-'''
+    intersection_points=tetrahedra_intersection(t1,t2)
+
+    plt.figure()
+    ax=plt.axes(projection='3d')
+    draw_tetrahedron(t1,'r')
+    draw_tetrahedron(t2,'g')
+    draw_polyhedron(intersection_points,'b')
+    plt.title('Example 1')
+
+def example2(): # tangent star
+
+    t1=np.array([[0.,0.,0.],   
+                 [1.,0.,0.],
+                 [0.,1.,0.],
+                 [0.,0.,1.]])
+    
+    t2=np.array([[ 0.25,-0.75, 0.5],
+                 [ 0.25, 0.25, 0.5],
+                 [-0.75, 0.25, 0.5],
+                 [ 0.25, 0.25,-0.5]])
+
+    intersection_points=tetrahedra_intersection(t1,t2)
+
+    plt.figure()
+    ax=plt.axes(projection='3d')
+    draw_tetrahedron(t1,'r')
+    draw_tetrahedron(t2,'g')
+    draw_polyhedron(intersection_points,'b')
+    plt.title('Example 2')
+
+def example3(): # star
+
+    t1=np.array([[0.,0.,0.],   
+                 [1.,0.,0.],
+                 [0.,1.,0.],
+                 [0.,0.,1.]])
+     
+    t2=np.array([[ 0.75,-0.5, 0.25],
+                 [ 0.75, 0.5, 0.25],
+                 [-0.25, 0.5, 0.25],
+                 [ 0.75, 0.5,-0.75]])
+
+    intersection_points=tetrahedra_intersection(t1,t2)
+
+    plt.figure()
+    ax=plt.axes(projection='3d')
+    draw_tetrahedron(t1,'r')
+    draw_tetrahedron(t2,'g')
+    draw_polyhedron(intersection_points,'b')
+    plt.title('Example 3')
+
+if __name__ == "__main__":
+    example1()
+    example2()
+    example3()
+    plt.show()

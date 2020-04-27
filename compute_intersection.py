@@ -109,9 +109,11 @@ def internal_control(t,eq,p):
     if s0>0 and s1>0 and s2>0:
         # p is in the triangle
         return 1 
+    elif s0==0 or s1==0 or s2==0:
+        return 0
     else:
         # p is out of the triangle
-        return 0
+        return -1
 
 
 def segments_control(tri,p):
@@ -422,32 +424,105 @@ def faces_control(tetr,eq,p):
         if abs(val)<tol: 
         # if p is on the plane, we have to control if p is in the triangle=face
         # (we have to consider each face individually because we have to create the triangle with its corresponding points)
-           
-            if i==0: # If p is on 0-th plane,
-                # we create the triangle object and then we use the 2D internal_control
-                # to test if p is in the triangle or not
-                tri=np.array([tetr[0],tetr[1],tetr[2]])
-                tri_eq=edges_eq_matrix(tri)
-                flag=internal_control(tri,tri_eq,p) # 2D version because we are working on a triangle
-                break
-                # When we have tested p with a face is not necessary to control the others because p can be only on one plane
-                # (if p is on two planes ==> p is on an edge ... ok)
-            if i==1:
-                tri=np.array([tetr[0],tetr[1],tetr[3]])
-                tri_eq=edges_eq_matrix(tri)
-                flag=internal_control(tri,tri_eq,p)
-                break
-            if i==2:
-                tri=np.array([tetr[1],tetr[2],tetr[3]])
-                tri_eq=edges_eq_matrix(tri)
-                flag=internal_control(tri,tri_eq,p)
-                break
-            if i==3:
-                tri=np.array([tetr[0],tetr[2],tetr[3]])
-                tri_eq=edges_eq_matrix(tri)
-                flag=internal_control(tri,tri_eq,p)
-                break
+        
+            if i==0:
+                # First, we control if the face is on a vertical plane parallel with x=0
+                if p[0]==tetr[0,0]==tetr[1,0]==tetr[2,0] and min(tetr[[0,1,2],1])<=p[1]<=max(tetr[[0,1,2],1]) and min(tetr[[0,1,2],2])<=p[2]<=max(tetr[[0,1,2],2]):
+                    # we create the triangle object and then we use the 2D internal_control
+                    # to test if p is in the triangle or not
+                    tri=np.array([tetr[0,[1,2]],tetr[1,[1,2]],tetr[2,[1,2]]])
+                    tri_eq=edges_eq_matrix(tri)
+                    flag=internal_control(tri,tri_eq,p[[1,2]]) # 2D version because we are working on a triangle
+                    if flag==0:
+                        # We have to control if the point is on an edge
+                        flag=segments_control(tri,p[[1,2]])
+                    break # When we have tested p with a face is not necessary to control the others because p can be only on one plane
+                    # (if p is on two planes ==> p is on an edge ... ok)
+                # Then, we control if the face is on a vertical plane parallel with y=0
+                elif p[1]==tetr[0,1]==tetr[1,1]==tetr[2,1] and min(tetr[[0,1,2],0])<=p[0]<=max(tetr[[0,1,2],0])and min(tetr[[0,1,2],2])<=p[2]<=max(tetr[[0,1,2],2]):
+                    tri=np.array([tetr[0,[0,2]],tetr[1,[0,2]],tetr[2,[0,2]]])
+                    tri_eq=edges_eq_matrix(tri)
+                    flag=internal_control(tri,tri_eq,p[[0,2]])
+                    if flag==0:
+                        flag=segments_control(tri,p[[0,2]])
+                    break
+                else: # General case
+                    tri=np.array([tetr[0],tetr[1],tetr[2]])
+                    tri_eq=edges_eq_matrix(tri)
+                    flag=internal_control(tri,tri_eq,p)                     
+                    if flag==0:
+                        flag=segments_control(tri,p)
+                    break
 
+            if i==1:
+                if p[0]==tetr[0,0]==tetr[1,0]==tetr[3,0] and min(tetr[[0,1,3],1])<=p[1]<=max(tetr[[0,1,3],1]) and min(tetr[[0,1,3],2])<=p[2]<=max(tetr[[0,1,3],2]):
+                    tri=np.array([tetr[0,[1,2]],tetr[1,[1,2]],tetr[3,[1,2]]])
+                    tri_eq=edges_eq_matrix(tri)
+                    flag=internal_control(tri,tri_eq,p[[1,2]])
+                    if flag==0:
+                        flag=segments_control(tri,p[[1,2]])
+                    break
+                elif p[1]==tetr[0,1]==tetr[1,1]==tetr[3,1] and min(tetr[[0,1,3],0])<=p[0]<=max(tetr[[0,1,3],0]) and min(tetr[[0,1,3],2])<=p[2]<=max(tetr[[0,1,3],2]):
+                    tri=np.array([tetr[0,[0,2]],tetr[1,[0,2]],tetr[3,[0,2]]])
+                    tri_eq=edges_eq_matrix(tri)
+                    flag=internal_control(tri,tri_eq,p[[0,2]])
+                    if flag==0:
+                        flag=segments_control(tri,p[[0,2]])
+                    break
+                else:
+                    tri=np.array([tetr[0],tetr[1],tetr[3]])
+                    tri_eq=edges_eq_matrix(tri)
+                    flag=internal_control(tri,tri_eq,p)
+                    if flag==0:
+                        flag=segments_control(tri,p)
+                    break
+
+            if i==2:
+                if p[0]==tetr[3,0]==tetr[1,0]==tetr[2,0] and min(tetr[[3,1,2],1])<=p[1]<=max(tetr[[3,1,2],1]) and min(tetr[[3,1,2],2])<=p[2]<=max(tetr[[3,1,2],2]):
+                    tri=np.array([tetr[1,[1,2]],tetr[2,[1,2]],tetr[3,[1,2]]])
+                    tri_eq=edges_eq_matrix(tri)
+                    flag=internal_control(tri,tri_eq,p[[1,2]])
+                    if flag==0:
+                        flag=segments_control(tri,p[[1,2]])
+                    break
+                elif p[1]==tetr[3,1]==tetr[1,1]==tetr[2,1] and min(tetr[[3,1,2],0])<=p[0]<=max(tetr[[3,1,2],0]) and min(tetr[[3,1,2],2])<=p[2]<=max(tetr[[3,1,2],2]):
+                    tri=np.array([tetr[1,[0,2]],tetr[2,[0,2]],tetr[3,[0,2]]])
+                    tri_eq=edges_eq_matrix(tri)
+                    flag=internal_control(tri,tri_eq,p[[0,2]])
+                    if flag==0:
+                        flag=segments_control(tri,p[[0,2]])
+                    break
+                else:
+                    tri=np.array([tetr[1],tetr[2],tetr[3]])
+                    tri_eq=edges_eq_matrix(tri)
+                    flag=internal_control(tri,tri_eq,p)
+                    if flag==0:
+                        flag=segments_control(tri,p)
+                    break
+
+            if i==3:
+                if p[0]==tetr[0,0]==tetr[3,0]==tetr[2,0] and min(tetr[[0,3,2],1])<=p[1]<=max(tetr[[0,3,2],1]) and min(tetr[[0,3,2],2])<=p[2]<=max(tetr[[0,3,2],2]):
+                    tri=np.array([tetr[0,[1,2]],tetr[2,[1,2]],tetr[3,[1,2]]])
+                    tri_eq=edges_eq_matrix(tri)
+                    flag=internal_control(tri,tri_eq,p[[1,2]])
+                    if flag==0:
+                        flag=segments_control(tri,p[[1,2]])
+                    break
+                elif p[1]==tetr[0,1]==tetr[3,1]==tetr[2,1] and min(tetr[[0,3,2],0])<=p[0]<=max(tetr[[0,3,2],0]) and min(tetr[[0,3,2],2])<=p[2]<=max(tetr[[0,3,2],2]):
+                    tri=np.array([tetr[0,[0,2]],tetr[2,[0,2]],tetr[3,[0,2]]])
+                    tri_eq=edges_eq_matrix(tri)
+                    flag=internal_control(tri,tri_eq,p[[0,2]])
+                    if flag==0:
+                        flag=segments_control(tri,p[[0,2]])
+                    break
+                else:
+                    tri=np.array([tetr[0],tetr[2],tetr[3]])
+                    tri_eq=edges_eq_matrix(tri)
+                    flag=internal_control(tri,tri_eq,p)
+                    if flag==0:
+                        flag=segments_control(tri,p)
+                    break     
+            
     return flag
 
 def find_points3(t1,v1,w1,t2,eq2):
@@ -458,8 +533,7 @@ def find_points3(t1,v1,w1,t2,eq2):
     The idea is the same of the triangles case.
     '''
 
-    c=0
-    pwork=np.zeros((24,3)) # We can't have more than 24 points
+    pinter=np.zeros((0,3))
 
     for i in range(0,3):
         # The loop is only on the first three points:
@@ -474,23 +548,24 @@ def find_points3(t1,v1,w1,t2,eq2):
         
             kv=compute_equation3(e,p,v_i)
             new_pv=v_i*kv+p 
-        
+
             kw=compute_equation3(e,p,w_i)
             new_pw=w_i*kw+p
+
         
-            if kv>0 and np.linalg.norm(new_pv-p)<=length_v:
+            if np.linalg.norm(new_pv-p)<=length_v and kv>0:
+
                 if faces_control(t2,eq2,new_pv)==1:
                     # We have to control if new_p is really an intersection point 
                     # of an edge with a face and not only a point on the plane that contains a face
-                    pwork[c]=new_pv
-                    c=c+1
+                    pinter=np.vstack((pinter,new_pv))
             
-            if kw>0 and np.linalg.norm(new_pw-p)<=length_w:
-                if faces_control(t2,eq2,new_pw)==1:            
-                    pwork[c]=new_pw
-                    c=c+1
+            if np.linalg.norm(new_pw-p)<=length_w and kw>0:
 
-    return pwork[0:c][:] # It returns only good points
+                if faces_control(t2,eq2,new_pw)==1:            
+                    pinter=np.vstack((pinter,new_pw))
+
+    return pinter
 
 def tetrahedra_intersection(t1,t2):
 
@@ -509,7 +584,8 @@ def tetrahedra_intersection(t1,t2):
     # (with triangles is not necessary beacuse side=face=edge but face!=edge in dim=3)
     pwork1=find_points3(t1,v1,w1,t2,eq2)
     pwork2=find_points3(t2,v2,w2,t1,eq1)
-    pinter=np.append(pwork1,pwork2,axis=0)
+    pinter=np.vstack((pwork1,pwork2))
+
     c=np.size(pinter,0) # Number of points found
 
     # We have to control if a vertex of a tetra. is contained in the other tetra.
@@ -518,13 +594,13 @@ def tetrahedra_intersection(t1,t2):
 
         for p in t1:
             if internal_control3(t2,eq2,p)==1:
-                pinter=np.append(pinter,[p],axis=0)
+                pinter=np.vstack((pinter,p))
 
         for p in t2:
             if internal_control3(t1,eq1,p)==1:
-                pinter=np.append(pinter,[p],axis=0)
+                pinter=pinter=np.vstack((pinter,p))
 
-    return pinter
+    return np.unique(pinter,axis=0)
 
 def draw_tetrahedron(t,color='r'):
 
